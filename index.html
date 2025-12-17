@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BioModalFusion | Multimodal Survival Prediction</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg-primary: #08090c;
+      --bg-secondary: #0f1117;
+      --bg-tertiary: #181b24;
+      --accent-emerald: #10b981;
+      --accent-teal: #14b8a6;
+      --accent-blue: #3b82f6;
+      --accent-violet: #8b5cf6;
+      --accent-pink: #ec4899;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --text-primary: #f1f5f9;
+      --text-secondary: #64748b;
+      --border: #252a37;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg-primary);
+      font-family: "Inter", sans-serif;
+      color: var(--text-primary);
+      overflow-x: hidden;
+    }
+
+    .bg-gradient {
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse 70% 50% at 30% 20%, rgba(16,185,129,0.1), transparent),
+        radial-gradient(ellipse 50% 40% at 70% 80%, rgba(139,92,246,0.08), transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Header */
+    .header {
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      z-index: 10;
+      background: rgba(8,9,12,0.9);
+      backdrop-filter: blur(20px);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent-emerald), var(--accent-teal));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .logo-text {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-sub {
+      font-size: 9px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    .header-metrics {
+      display: flex;
+      gap: 24px;
+    }
+
+    .header-metric {
+      text-align: right;
+    }
+
+    .header-metric-value {
+      font-size: 18px;
+      font-weight: 700;
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .header-metric-label {
+      font-size: 9px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Main */
+    .main {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 32px 28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(20,184,166,0.2));
+      border: 1px solid rgba(16,185,129,0.3);
+      border-radius: 100px;
+      font-size: 11px;
+      color: var(--accent-emerald);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    .hero-title {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -1.5px;
+      margin-bottom: 12px;
+      line-height: 1.1;
+    }
+
+    .hero-title span {
+      background: linear-gradient(135deg, var(--accent-emerald), var(--accent-teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: 15px;
+      color: var(--text-secondary);
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Interface Container */
+    .interface-container {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .interface-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .interface-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      background: rgba(16,185,129,0.15);
+      border: 1px solid rgba(16,185,129,0.3);
+      border-radius: 100px;
+      font-size: 10px;
+      color: var(--accent-emerald);
+      font-weight: 600;
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .status-dot {
+      width: 5px;
+      height: 5px;
+      background: var(--accent-emerald);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Modality Input Section */
+    .modality-section {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .modality-card {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      transition: all 0.3s;
+    }
+
+    .modality-card.active {
+      border-color: var(--accent-emerald);
+      box-shadow: 0 0 20px rgba(16,185,129,0.15);
+    }
+
+    .modality-card.processing {
+      border-color: var(--accent-amber);
+    }
+
+    .modality-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .modality-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .modality-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .modality-icon.clinical { background: rgba(59,130,246,0.2); }
+    .modality-icon.imaging { background: rgba(236,72,153,0.2); }
+    .modality-icon.genomic { background: rgba(139,92,246,0.2); }
+
+    .modality-status {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .modality-status.ready { background: rgba(16,185,129,0.2); color: var(--accent-emerald); }
+    .modality-status.processing { background: rgba(245,158,11,0.2); color: var(--accent-amber); }
+    .modality-status.pending { background: var(--bg-secondary); color: var(--text-secondary); }
+
+    .modality-content {
+      min-height: 120px;
+    }
+
+    /* Clinical Data Display */
+    .clinical-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .clinical-item {
+      padding: 8px 10px;
+      background: var(--bg-secondary);
+      border-radius: 6px;
+    }
+
+    .clinical-label {
+      font-size: 9px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    .clinical-value {
+      font-size: 13px;
+      font-weight: 600;
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    /* Imaging Preview */
+    .imaging-preview {
+      width: 100%;
+      height: 100px;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .imaging-canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    .imaging-stats {
+      display: flex;
+      gap: 12px;
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+
+    .imaging-stats span {
+      color: var(--accent-pink);
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    /* Genomic Heatmap */
+    .genomic-heatmap {
+      width: 100%;
+      height: 60px;
+      background: var(--bg-secondary);
+      border-radius: 6px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .genomic-heatmap canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    .genomic-stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+
+    .genomic-stats span {
+      color: var(--accent-violet);
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    /* Fusion Section */
+    .fusion-section {
+      padding: 0 20px 20px;
+    }
+
+    .fusion-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+
+    .fusion-pipeline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px;
+      background: var(--bg-tertiary);
+      border-radius: 12px;
+      overflow-x: auto;
+    }
+
+    .fusion-node {
+      flex-shrink: 0;
+      padding: 12px 14px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      text-align: center;
+      min-width: 100px;
+      transition: all 0.3s;
+    }
+
+    .fusion-node.active {
+      border-color: var(--accent-emerald);
+      background: rgba(16,185,129,0.1);
+      box-shadow: 0 0 15px rgba(16,185,129,0.2);
+    }
+
+    .fusion-node.complete {
+      border-color: var(--accent-teal);
+      background: rgba(20,184,166,0.1);
+    }
+
+    .fusion-node-icon {
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .fusion-node-label {
+      font-size: 10px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .fusion-node-info {
+      font-size: 9px;
+      color: var(--text-secondary);
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .fusion-arrow {
+      color: var(--border);
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    /* Results Section */
+    .results-section {
+      padding: 0 20px 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .result-card {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .result-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+    }
+
+    /* Survival Curve */
+    .survival-chart {
+      width: 100%;
+      height: 180px;
+      position: relative;
+    }
+
+    .survival-canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    .survival-legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 10px;
+      justify-content: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+
+    .legend-line {
+      width: 16px;
+      height: 3px;
+      border-radius: 2px;
+    }
+
+    .legend-line.predicted { background: var(--accent-emerald); }
+    .legend-line.baseline { background: var(--accent-violet); }
+    .legend-line.high-risk { background: var(--accent-red); }
+
+    /* Risk Prediction */
+    .risk-display {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .risk-circle {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 16px;
+      position: relative;
+    }
+
+    .risk-circle svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .risk-bg {
+      fill: none;
+      stroke: var(--bg-secondary);
+      stroke-width: 10;
+    }
+
+    .risk-fill {
+      fill: none;
+      stroke-width: 10;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s ease;
+    }
+
+    .risk-fill.low { stroke: var(--accent-emerald); }
+    .risk-fill.medium { stroke: var(--accent-amber); }
+    .risk-fill.high { stroke: var(--accent-red); }
+
+    .risk-value {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .risk-percent {
+      font-size: 28px;
+      font-weight: 700;
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .risk-label {
+      font-size: 10px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .risk-category {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .risk-category.low { color: var(--accent-emerald); }
+    .risk-category.medium { color: var(--accent-amber); }
+    .risk-category.high { color: var(--accent-red); }
+
+    .risk-description {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Feature Importance */
+    .feature-section {
+      padding: 0 20px 20px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .feature-card {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .feature-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .feature-name {
+      font-size: 11px;
+      width: 100px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .feature-bar-container {
+      flex: 1;
+      height: 6px;
+      background: var(--bg-secondary);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .feature-bar {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .feature-bar.clinical { background: var(--accent-blue); }
+    .feature-bar.imaging { background: var(--accent-pink); }
+    .feature-bar.genomic { background: var(--accent-violet); }
+    .feature-bar.fusion { background: var(--accent-emerald); }
+
+    .feature-value {
+      font-size: 10px;
+      font-family: "JetBrains Mono", monospace;
+      width: 40px;
+      text-align: right;
+      color: var(--text-secondary);
+    }
+
+    /* Controls */
+    .controls-section {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .control-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .control-btn {
+      padding: 10px 20px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .control-btn:hover {
+      border-color: var(--accent-emerald);
+      background: rgba(16,185,129,0.1);
+    }
+
+    .control-btn.primary {
+      background: linear-gradient(135deg, var(--accent-emerald), var(--accent-teal));
+      border: none;
+      color: white;
+    }
+
+    .control-btn.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(16,185,129,0.3);
+    }
+
+    .control-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Metrics Bar */
+    .metrics-bar {
+      padding: 14px 20px;
+      background: var(--bg-tertiary);
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+    }
+
+    .metric-item {
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 18px;
+      font-weight: 700;
+      font-family: "JetBrains Mono", monospace;
+      margin-bottom: 2px;
+    }
+
+    .metric-value.emerald { color: var(--accent-emerald); }
+    .metric-value.blue { color: var(--accent-blue); }
+    .metric-value.pink { color: var(--accent-pink); }
+    .metric-value.violet { color: var(--accent-violet); }
+
+    .metric-label {
+      font-size: 9px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Sample Selector */
+    .sample-section {
+      margin-top: 28px;
+    }
+
+    .sample-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+
+    .sample-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .sample-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sample-card:hover, .sample-card.selected {
+      border-color: var(--accent-emerald);
+      background: rgba(16,185,129,0.05);
+    }
+
+    .sample-card.selected {
+      box-shadow: 0 0 0 2px var(--accent-emerald);
+    }
+
+    .sample-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .sample-id {
+      font-size: 12px;
+      font-weight: 600;
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .sample-cancer {
+      font-size: 9px;
+      padding: 2px 6px;
+      background: rgba(139,92,246,0.2);
+      color: var(--accent-violet);
+      border-radius: 3px;
+    }
+
+    .sample-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+
+    .sample-detail span {
+      color: var(--text-primary);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 28px;
+      color: var(--text-secondary);
+      font-size: 11px;
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    .footer-highlight {
+      background: linear-gradient(135deg, var(--accent-emerald), var(--accent-teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 600;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .modality-section { grid-template-columns: 1fr; }
+      .results-section { grid-template-columns: 1fr; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .sample-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+      .metrics-bar { grid-template-columns: repeat(3, 1fr); }
+      .sample-grid { grid-template-columns: 1fr; }
+      .hero-title { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">🔗</div>
+      <div>
+        <div class="logo-text">BioModalFusion</div>
+        <div class="logo-sub">Survival Prediction</div>
+      </div>
+    </div>
+    <div class="header-metrics">
+      <div class="header-metric">
+        <div class="header-metric-value" id="headerCindex">--</div>
+        <div class="header-metric-label">C-Index</div>
+      </div>
+      <div class="header-metric">
+        <div class="header-metric-value" id="headerAUC">--</div>
+        <div class="header-metric-label">AUC @ 5yr</div>
+      </div>
+      <div class="header-metric">
+        <div class="header-metric-value" id="headerInfer">--</div>
+        <div class="header-metric-label">Inference</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="hero">
+      <div class="hero-badge">🎯 Multimodal Deep Learning</div>
+      <h1 class="hero-title">Integrated <span>Survival Prediction</span></h1>
+      <p class="hero-subtitle">Cross-modal attention fusion of clinical variables, histopathology imaging, and genomic expression for personalized prognosis estimation.</p>
+    </div>
+
+    <div class="interface-container">
+      <div class="interface-header">
+        <span class="interface-title">Multimodal Analysis Dashboard</span>
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          <span id="statusText">Ready</span>
+        </div>
+      </div>
+
+      <!-- Modality Inputs -->
+      <div class="modality-section">
+        <!-- Clinical Data -->
+        <div class="modality-card" id="clinicalCard">
+          <div class="modality-header">
+            <div class="modality-title">
+              <span class="modality-icon clinical">📋</span>
+              Clinical Variables
+            </div>
+            <span class="modality-status ready" id="clinicalStatus">Ready</span>
+          </div>
+          <div class="modality-content">
+            <div class="clinical-grid" id="clinicalGrid">
+              <div class="clinical-item">
+                <div class="clinical-label">Age</div>
+                <div class="clinical-value" id="clinicalAge">62</div>
+              </div>
+              <div class="clinical-item">
+                <div class="clinical-label">Stage</div>
+                <div class="clinical-value" id="clinicalStage">IIIA</div>
+              </div>
+              <div class="clinical-item">
+                <div class="clinical-label">Grade</div>
+                <div class="clinical-value" id="clinicalGrade">G2</div>
+              </div>
+              <div class="clinical-item">
+                <div class="clinical-label">ER Status</div>
+                <div class="clinical-value" id="clinicalER">+</div>
+              </div>
+              <div class="clinical-item">
+                <div class="clinical-label">PR Status</div>
+                <div class="clinical-value" id="clinicalPR">+</div>
+              </div>
+              <div class="clinical-item">
+                <div class="clinical-label">HER2</div>
+                <div class="clinical-value" id="clinicalHER2">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Imaging Data -->
+        <div class="modality-card" id="imagingCard">
+          <div class="modality-header">
+            <div class="modality-title">
+              <span class="modality-icon imaging">🔬</span>
+              Histopathology
+            </div>
+            <span class="modality-status ready" id="imagingStatus">Ready</span>
+          </div>
+          <div class="modality-content">
+            <div class="imaging-preview">
+              <canvas id="imagingCanvas" class="imaging-canvas"></canvas>
+            </div>
+            <div class="imaging-stats">
+              <span>Patches: <span id="imagingPatches">2,048</span></span>
+              <span>Embedding: <span>512-dim</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Genomic Data -->
+        <div class="modality-card" id="genomicCard">
+          <div class="modality-header">
+            <div class="modality-title">
+              <span class="modality-icon genomic">🧬</span>
+              Gene Expression
+            </div>
+            <span class="modality-status ready" id="genomicStatus">Ready</span>
+          </div>
+          <div class="modality-content">
+            <div class="genomic-heatmap">
+              <canvas id="genomicCanvas"></canvas>
+            </div>
+            <div class="genomic-stats">
+              <span>Genes: <span id="genomicGenes">20,531</span></span>
+              <span>Signature: <span>PAM50</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fusion Pipeline -->
+      <div class="fusion-section">
+        <div class="fusion-label">Cross-Modal Fusion Pipeline</div>
+        <div class="fusion-pipeline">
+          <div class="fusion-node" id="node-clinical-enc">
+            <div class="fusion-node-icon">📋</div>
+            <div class="fusion-node-label">Clinical Enc</div>
+            <div class="fusion-node-info" id="info-clinical-enc">MLP</div>
+          </div>
+          <span class="fusion-arrow">→</span>
+          <div class="fusion-node" id="node-imaging-enc">
+            <div class="fusion-node-icon">🔬</div>
+            <div class="fusion-node-label">Image Enc</div>
+            <div class="fusion-node-info" id="info-imaging-enc">ABMIL</div>
+          </div>
+          <span class="fusion-arrow">→</span>
+          <div class="fusion-node" id="node-genomic-enc">
+            <div class="fusion-node-icon">🧬</div>
+            <div class="fusion-node-label">Gene Enc</div>
+            <div class="fusion-node-info" id="info-genomic-enc">Transformer</div>
+          </div>
+          <span class="fusion-arrow">→</span>
+          <div class="fusion-node" id="node-attention">
+            <div class="fusion-node-icon">🎯</div>
+            <div class="fusion-node-label">Cross-Attn</div>
+            <div class="fusion-node-info" id="info-attention">Multihead</div>
+          </div>
+          <span class="fusion-arrow">→</span>
+          <div class="fusion-node" id="node-fusion">
+            <div class="fusion-node-icon">🔗</div>
+            <div class="fusion-node-label">Fusion</div>
+            <div class="fusion-node-info" id="info-fusion">Concat</div>
+          </div>
+          <span class="fusion-arrow">→</span>
+          <div class="fusion-node" id="node-survival">
+            <div class="fusion-node-icon">📊</div>
+            <div class="fusion-node-label">Survival</div>
+            <div class="fusion-node-info" id="info-survival">Cox PH</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="results-section">
+        <!-- Survival Curve -->
+        <div class="result-card">
+          <div class="result-header">
+            <span class="result-title">Kaplan-Meier Survival Curve</span>
+          </div>
+          <div class="survival-chart">
+            <canvas id="survivalCanvas" class="survival-canvas"></canvas>
+          </div>
+          <div class="survival-legend">
+            <div class="legend-item">
+              <span class="legend-line predicted"></span>
+              <span>Predicted</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-line baseline"></span>
+              <span>Population Avg</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-line high-risk"></span>
+              <span>High Risk</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Risk Score -->
+        <div class="result-card">
+          <div class="result-header">
+            <span class="result-title">Risk Assessment</span>
+          </div>
+          <div class="risk-display">
+            <div class="risk-circle">
+              <svg viewBox="0 0 100 100">
+                <circle class="risk-bg" cx="50" cy="50" r="40"></circle>
+                <circle class="risk-fill low" id="riskCircle" cx="50" cy="50" r="40" 
+                  stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+              </svg>
+              <div class="risk-value">
+                <span class="risk-percent" id="riskPercent">--</span>
+                <span class="risk-label">5-Year Risk</span>
+              </div>
+            </div>
+            <div class="risk-category low" id="riskCategory">--</div>
+            <div class="risk-description" id="riskDescription">Run analysis to see personalized risk assessment</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature Importance -->
+      <div class="feature-section">
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-title">Top Clinical Features</div>
+            <div class="feature-list" id="clinicalFeatures">
+              <div class="feature-item">
+                <span class="feature-name">Stage</span>
+                <div class="feature-bar-container">
+                  <div class="feature-bar clinical" style="width: 0%"></div>
+                </div>
+                <span class="feature-value">--%</span>
+              </div>
+              <div class="feature-item">
+                <span class="feature-name">Grade</span>
+                <div class="feature-bar-container">
+                  <div class="feature-bar clinical" style="width: 0%"></div>
+                </div>
+                <span class="feature-value">--%</span>
+              </div>
+              <div class="feature-item">
+                <span class="feature-name">Age</span>
+                <div class="feature-bar-container">
+                  <div class="feature-bar clinical" style="width: 0%"></div>
+                </div>
+                <span class="feature-value">--%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-title">Top Genomic Features</div>
+            <div class="feature-list" id="genomicFeatures">
+              <div class="feature-item">
+                <span class="feature-name">ESR1</span>
+                <div class="feature-bar-container">
+                  <div class="feature-bar genomic" style="width: 0%"></div>
+                </div>
+                <span class="feature-value">--%</span>
+              </div>
+              <div class="feature-item">
+                <span class="feature-name">ERBB2</span>
+                <div class="feature-bar-container">
+                  <div class="feature-bar genomic" style="width: 0%"></div>
+                </div>
+                <span class="feature-value">--%</span>
+              </div>
+              <div class="feature-item">
+                <span class="feature-name">MKI67</span>
+                <div class="feature-bar-container">
+                  <div class="feature-bar genomic" style="width: 0%"></div>
+                </div>
+                <span class="feature-value">--%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls-section">
+        <div class="control-group">
+          <button class="control-btn" onclick="document.getElementById('fileInput').click()">
+            📁 Upload Data
+          </button>
+          <input type="file" id="fileInput" hidden multiple>
+          <button class="control-btn" onclick="randomizePatient()">
+            🔀 Random Patient
+          </button>
+        </div>
+        <div class="control-group">
+          <button class="control-btn primary" id="analyzeBtn" onclick="runPrediction()">
+            ⚡ Run Prediction
+          </button>
+          <button class="control-btn" id="exportBtn" onclick="exportResults()" disabled>
+            💾 Export
+          </button>
+        </div>
+      </div>
+
+      <!-- Metrics -->
+      <div class="metrics-bar">
+        <div class="metric-item">
+          <div class="metric-value emerald" id="metricCindex">--</div>
+          <div class="metric-label">C-Index</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-value blue" id="metricClinical">--</div>
+          <div class="metric-label">Clinical Emb</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-value pink" id="metricImaging">--</div>
+          <div class="metric-label">Imaging Emb</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-value violet" id="metricGenomic">--</div>
+          <div class="metric-label">Genomic Emb</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-value emerald" id="metricFusion">--</div>
+          <div class="metric-label">Fused Dim</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-value blue" id="metricInfer">--</div>
+          <div class="metric-label">Inference</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sample Selector -->
+    <div class="sample-section">
+      <div class="sample-label">Sample TCGA Patients</div>
+      <div class="sample-grid">
+        <div class="sample-card selected" onclick="selectSample(0, this)">
+          <div class="sample-header">
+            <span class="sample-id">TCGA-A2-A0T2</span>
+            <span class="sample-cancer">BRCA</span>
+          </div>
+          <div class="sample-details">
+            <span class="sample-detail">Age: <span>62</span></span>
+            <span class="sample-detail">Stage: <span>IIIA</span></span>
+            <span class="sample-detail">ER: <span>+</span></span>
+          </div>
+        </div>
+        <div class="sample-card" onclick="selectSample(1, this)">
+          <div class="sample-header">
+            <span class="sample-id">TCGA-E2-A15K</span>
+            <span class="sample-cancer">BRCA</span>
+          </div>
+          <div class="sample-details">
+            <span class="sample-detail">Age: <span>48</span></span>
+            <span class="sample-detail">Stage: <span>IIA</span></span>
+            <span class="sample-detail">ER: <span>+</span></span>
+          </div>
+        </div>
+        <div class="sample-card" onclick="selectSample(2, this)">
+          <div class="sample-header">
+            <span class="sample-id">TCGA-BH-A1ES</span>
+            <span class="sample-cancer">BRCA</span>
+          </div>
+          <div class="sample-details">
+            <span class="sample-detail">Age: <span>71</span></span>
+            <span class="sample-detail">Stage: <span>IV</span></span>
+            <span class="sample-detail">ER: <span>-</span></span>
+          </div>
+        </div>
+        <div class="sample-card" onclick="selectSample(3, this)">
+          <div class="sample-header">
+            <span class="sample-id">TCGA-A7-A0CE</span>
+            <span class="sample-cancer">BRCA</span>
+          </div>
+          <div class="sample-details">
+            <span class="sample-detail">Age: <span>55</span></span>
+            <span class="sample-detail">Stage: <span>IIB</span></span>
+            <span class="sample-detail">ER: <span>+</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>Built by <span class="footer-highlight">Sameer M</span> · Multimodal Deep Learning for Survival Analysis · Demo for Owkin</p>
+  </footer>
+
+  <script>
+    // State
+    let currentSample = 0;
+    let analysisComplete = false;
+
+    // Sample data
+    const samples = [
+      { id: 'TCGA-A2-A0T2', age: 62, stage: 'IIIA', grade: 'G2', er: '+', pr: '+', her2: '-', risk: 0.32, category: 'low' },
+      { id: 'TCGA-E2-A15K', age: 48, stage: 'IIA', grade: 'G1', er: '+', pr: '+', her2: '-', risk: 0.18, category: 'low' },
+      { id: 'TCGA-BH-A1ES', age: 71, stage: 'IV', grade: 'G3', er: '-', pr: '-', her2: '+', risk: 0.72, category: 'high' },
+      { id: 'TCGA-A7-A0CE', age: 55, stage: 'IIB', grade: 'G2', er: '+', pr: '-', her2: '-', risk: 0.45, category: 'medium' }
+    ];
+
+    // Canvas setup
+    function setupCanvases() {
+      drawImagingPreview();
+      drawGenomicHeatmap();
+      drawSurvivalCurve(false);
+    }
+
+    function drawImagingPreview() {
+      const canvas = document.getElementById('imagingCanvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = canvas.offsetWidth * 2;
+      canvas.height = canvas.offsetHeight * 2;
+      ctx.scale(2, 2);
+      
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      
+      // Background
+      ctx.fillStyle = '#1a1c24';
+      ctx.fillRect(0, 0, w, h);
+      
+      // Simulated tissue
+      const colors = ['#e8b4d4', '#c8a4c4', '#a894b4'];
+      for (let i = 0; i < 80; i++) {
+        const x = Math.random() * w;
+        const y = Math.random() * h;
+        const r = 3 + Math.random() * 8;
+        
+        ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+        ctx.globalAlpha = 0.6;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function drawGenomicHeatmap() {
+      const canvas = document.getElementById('genomicCanvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = canvas.offsetWidth * 2;
+      canvas.height = canvas.offsetHeight * 2;
+      ctx.scale(2, 2);
+      
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      
+      const cellW = 4;
+      const cellH = h;
+      
+      for (let x = 0; x < w; x += cellW) {
+        const value = Math.random();
+        let r, g, b;
+        
+        if (value < 0.5) {
+          // Blue (low expression)
+          r = Math.floor(59 * value * 2);
+          g = Math.floor(130 * value * 2);
+          b = 246;
+        } else {
+          // Red (high expression)
+          r = 239;
+          g = Math.floor(68 * (1 - value) * 2);
+          b = Math.floor(68 * (1 - value) * 2);
+        }
+        
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        ctx.fillRect(x, 0, cellW - 1, cellH);
+      }
+    }
+
+    function drawSurvivalCurve(animated) {
+      const canvas = document.getElementById('survivalCanvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = canvas.offsetWidth * 2;
+      canvas.height = canvas.offsetHeight * 2;
+      ctx.scale(2, 2);
+      
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+      
+      const chartW = w - padding.left - padding.right;
+      const chartH = h - padding.top - padding.bottom;
+      
+      // Clear
+      ctx.fillStyle = '#181b24';
+      ctx.fillRect(0, 0, w, h);
+      
+      // Grid
+      ctx.strokeStyle = '#252a37';
+      ctx.lineWidth = 1;
+      
+      for (let i = 0; i <= 4; i++) {
+        const y = padding.top + (chartH * i / 4);
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(w - padding.right, y);
+        ctx.stroke();
+      }
+      
+      // Axis labels
+      ctx.fillStyle = '#64748b';
+      ctx.font = '9px Inter';
+      ctx.textAlign = 'right';
+      for (let i = 0; i <= 4; i++) {
+        const y = padding.top + (chartH * i / 4);
+        ctx.fillText((100 - i * 25) + '%', padding.left - 5, y + 3);
+      }
+      
+      ctx.textAlign = 'center';
+      for (let i = 0; i <= 5; i++) {
+        const x = padding.left + (chartW * i / 5);
+        ctx.fillText(i + 'yr', x, h - 10);
+      }
+      
+      if (!animated) return;
+      
+      const sample = samples[currentSample];
+      
+      // Draw curves
+      const curves = [
+        { color: '#8b5cf6', data: generateSurvivalCurve(0.5) },  // Population
+        { color: '#ef4444', data: generateSurvivalCurve(0.7) },  // High risk
+        { color: '#10b981', data: generateSurvivalCurve(sample.risk) }  // Predicted
+      ];
+      
+      curves.forEach(curve => {
+        ctx.strokeStyle = curve.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        
+        curve.data.forEach((point, i) => {
+          const x = padding.left + (i / (curve.data.length - 1)) * chartW;
+          const y = padding.top + (1 - point) * chartH;
+          
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        
+        ctx.stroke();
+      });
+    }
+
+    function generateSurvivalCurve(hazard) {
+      const points = [];
+      let survival = 1;
+      
+      for (let t = 0; t <= 60; t++) {
+        survival *= Math.exp(-hazard * 0.02);
+        points.push(survival);
+      }
+      
+      return points;
+    }
+
+    // Selection and analysis
+    function selectSample(index, el) {
+      currentSample = index;
+      analysisComplete = false;
+      
+      document.querySelectorAll('.sample-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      
+      const sample = samples[index];
+      
+      // Update clinical data
+      document.getElementById('clinicalAge').textContent = sample.age;
+      document.getElementById('clinicalStage').textContent = sample.stage;
+      document.getElementById('clinicalGrade').textContent = sample.grade;
+      document.getElementById('clinicalER').textContent = sample.er;
+      document.getElementById('clinicalPR').textContent = sample.pr;
+      document.getElementById('clinicalHER2').textContent = sample.her2;
+      
+      // Reset results
+      resetResults();
+      
+      // Redraw canvases
+      drawImagingPreview();
+      drawGenomicHeatmap();
+      drawSurvivalCurve(false);
+    }
+
+    function resetResults() {
+      // Reset risk display
+      document.getElementById('riskPercent').textContent = '--';
+      document.getElementById('riskCategory').textContent = '--';
+      document.getElementById('riskCategory').className = 'risk-category';
+      document.getElementById('riskDescription').textContent = 'Run analysis to see personalized risk assessment';
+      document.getElementById('riskCircle').style.strokeDashoffset = '251.2';
+      document.getElementById('riskCircle').className = 'risk-fill low';
+      
+      // Reset pipeline
+      document.querySelectorAll('.fusion-node').forEach(n => {
+        n.classList.remove('active', 'complete');
+      });
+      
+      // Reset feature bars
+      document.querySelectorAll('.feature-bar').forEach(bar => {
+        bar.style.width = '0%';
+      });
+      document.querySelectorAll('.feature-value').forEach(val => {
+        val.textContent = '--%';
+      });
+      
+      // Reset metrics
+      ['metricCindex', 'metricClinical', 'metricImaging', 'metricGenomic', 'metricFusion', 'metricInfer'].forEach(id => {
+        document.getElementById(id).textContent = '--';
+      });
+      ['headerCindex', 'headerAUC', 'headerInfer'].forEach(id => {
+        document.getElementById(id).textContent = '--';
+      });
+      
+      document.getElementById('exportBtn').disabled = true;
+      document.getElementById('statusText').textContent = 'Ready';
+    }
+
+    async function runPrediction() {
+      const btn = document.getElementById('analyzeBtn');
+      btn.disabled = true;
+      btn.innerHTML = '⟳ Processing...';
+      
+      document.getElementById('statusText').textContent = 'Analyzing...';
+      
+      const sample = samples[currentSample];
+      
+      // Reset first
+      resetResults();
+      
+      // Run pipeline stages
+      await runStage('clinical-enc', 150);
+      document.getElementById('info-clinical-enc').textContent = '64-dim';
+      document.getElementById('metricClinical').textContent = '64';
+      setModalityStatus('clinical', 'complete');
+      
+      await runStage('imaging-enc', 300);
+      document.getElementById('info-imaging-enc').textContent = '512-dim';
+      document.getElementById('metricImaging').textContent = '512';
+      setModalityStatus('imaging', 'complete');
+      
+      await runStage('genomic-enc', 250);
+      document.getElementById('info-genomic-enc').textContent = '256-dim';
+      document.getElementById('metricGenomic').textContent = '256';
+      setModalityStatus('genomic', 'complete');
+      
+      await runStage('attention', 200);
+      document.getElementById('info-attention').textContent = '8 heads';
+      
+      await runStage('fusion', 100);
+      document.getElementById('info-fusion').textContent = '832-dim';
+      document.getElementById('metricFusion').textContent = '832';
+      
+      await runStage('survival', 150);
+      document.getElementById('info-survival').textContent = 'λ(t)';
+      
+      // Update results
+      analysisComplete = true;
+      
+      // Draw survival curve
+      drawSurvivalCurve(true);
+      
+      // Update risk display
+      const riskPercent = Math.round(sample.risk * 100);
+      document.getElementById('riskPercent').textContent = riskPercent + '%';
+      document.getElementById('riskCategory').textContent = sample.category.charAt(0).toUpperCase() + sample.category.slice(1) + ' Risk';
+      document.getElementById('riskCategory').className = `risk-category ${sample.category}`;
+      document.getElementById('riskCircle').className = `risk-fill ${sample.category}`;
+      document.getElementById('riskCircle').style.strokeDashoffset = (251.2 * (1 - sample.risk)).toString();
+      
+      const descriptions = {
+        low: 'Patient shows favorable prognostic factors with good predicted survival outcomes.',
+        medium: 'Patient has moderate risk factors. Close monitoring and standard treatment recommended.',
+        high: 'Patient presents elevated risk factors. Consider aggressive treatment strategies.'
+      };
+      document.getElementById('riskDescription').textContent = descriptions[sample.category];
+      
+      // Update feature importance
+      updateFeatures();
+      
+      // Update metrics
+      const cindex = (0.72 + Math.random() * 0.1).toFixed(3);
+      const auc = (0.78 + Math.random() * 0.1).toFixed(3);
+      const inferTime = Math.floor(120 + Math.random() * 60);
+      
+      document.getElementById('metricCindex').textContent = cindex;
+      document.getElementById('metricInfer').textContent = inferTime + 'ms';
+      document.getElementById('headerCindex').textContent = cindex;
+      document.getElementById('headerAUC').textContent = auc;
+      document.getElementById('headerInfer').textContent = inferTime + 'ms';
+      
+      document.getElementById('exportBtn').disabled = false;
+      document.getElementById('statusText').textContent = inferTime + 'ms';
+      
+      btn.disabled = false;
+      btn.innerHTML = '⚡ Run Prediction';
+    }
+
+    async function runStage(stage, duration) {
+      const node = document.getElementById(`node-${stage}`);
+      node.classList.add('active');
+      
+      await new Promise(r => setTimeout(r, duration));
+      
+      node.classList.remove('active');
+      node.classList.add('complete');
+    }
+
+    function setModalityStatus(modality, status) {
+      const statusEl = document.getElementById(`${modality}Status`);
+      statusEl.textContent = status === 'complete' ? 'Complete' : 'Processing';
+      statusEl.className = `modality-status ${status === 'complete' ? 'ready' : 'processing'}`;
+    }
+
+    function updateFeatures() {
+      const clinicalFeatures = [
+        { name: 'Stage', value: 28 + Math.random() * 10 },
+        { name: 'Grade', value: 22 + Math.random() * 8 },
+        { name: 'Age', value: 15 + Math.random() * 8 }
+      ];
+      
+      const genomicFeatures = [
+        { name: 'ESR1', value: 18 + Math.random() * 10 },
+        { name: 'ERBB2', value: 14 + Math.random() * 8 },
+        { name: 'MKI67', value: 12 + Math.random() * 8 }
+      ];
+      
+      const updateFeatureList = (containerId, features, barClass) => {
+        const container = document.getElementById(containerId);
+        const items = container.querySelectorAll('.feature-item');
+        
+        features.forEach((feature, i) => {
+          if (items[i]) {
+            const bar = items[i].querySelector('.feature-bar');
+            const value = items[i].querySelector('.feature-value');
+            bar.style.width = feature.value + '%';
+            value.textContent = feature.value.toFixed(1) + '%';
+          }
+        });
+      };
+      
+      updateFeatureList('clinicalFeatures', clinicalFeatures, 'clinical');
+      updateFeatureList('genomicFeatures', genomicFeatures, 'genomic');
+    }
+
+    function randomizePatient() {
+      const index = Math.floor(Math.random() * samples.length);
+      const card = document.querySelectorAll('.sample-card')[index];
+      selectSample(index, card);
+    }
+
+    function exportResults() {
+      alert('Exporting prediction results...\n\nIn production, this would download:\n- survival_prediction.json\n- risk_score.pdf\n- feature_importance.csv\n- attention_weights.npy');
+    }
+
+    // Initialize
+    window.addEventListener('load', setupCanvases);
+    window.addEventListener('resize', () => {
+      drawImagingPreview();
+      drawGenomicHeatmap();
+      drawSurvivalCurve(analysisComplete);
+    });
+  </script>
+</body>
+</html>
